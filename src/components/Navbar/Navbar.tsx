@@ -1,8 +1,13 @@
 /* eslint-disable @next/next/no-img-element */
 /* This example requires Tailwind CSS v2.0+ */
-import { Fragment } from "react";
+import { forwardRef, Fragment } from "react";
 import { Disclosure, Menu, Transition } from "@headlessui/react";
-import { BellIcon, MenuIcon, XIcon } from "@heroicons/react/outline";
+import {
+  BellIcon,
+  LocationMarkerIcon,
+  MenuIcon,
+  XIcon,
+} from "@heroicons/react/outline";
 import Link from "next/link";
 
 import { Router, useRouter } from "next/router";
@@ -12,36 +17,41 @@ function classNames(...classes: string[]) {
 }
 
 const MENU_ITEMS = [
-  { title: "Home", path: "/" },
-  { title: "Features", path: "/features" },
+  { title: "Home", path: "/", type: "main" },
+  { title: "Features", path: "/features", type: "main" },
+  { title: "Your Profile", path: "/profile", type: "profile" },
+  { title: "Settings", path: "/profile", type: "profile" },
+  { title: "Sign out", path: "/profile", type: "profile" },
 ];
 
 type Props = {
   title: string;
   path: string;
+  type: string;
 };
 
-const NavbarLink: React.FC<Props> = (props) => {
-  const router = useRouter();
-
-  const { title, path } = props;
-
+const ProfileMenuLink = forwardRef((props: any, ref) => {
+  let { href, children, active, ...rest } = props;
   return (
-    <Link href={path} passHref>
+    <Link href={href}>
       <a
-        className={
-          router.pathname === path
-            ? "border-indigo-500 text-gray-900 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
-            : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
-        }
+        ref={ref}
+        {...rest}
+        className={classNames(
+          active ? "bg-gray-100" : "",
+          "block px-4 py-2 text-sm text-gray-700"
+        )}
       >
-        {title}
+        {children}
       </a>
     </Link>
   );
-};
+});
+ProfileMenuLink.displayName = "ProfileMenuLink";
 
 export default function Navbar() {
+  const router = useRouter();
+
   return (
     <Disclosure as="nav" className="bg-white shadow">
       {({ open }) => (
@@ -63,9 +73,21 @@ export default function Navbar() {
                 </div>
                 <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
                   {/* Current: "border-indigo-500 text-gray-900", Default: "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700" */}
-                  {MENU_ITEMS.map((link, index) => (
-                    <NavbarLink {...link} key={index} />
-                  ))}
+                  {MENU_ITEMS.filter((link) => link.type === "main").map(
+                    (link, index) => (
+                      <Link href={link.path} passHref key={index}>
+                        <a
+                          className={
+                            router.pathname === link.path
+                              ? "border-indigo-500 text-gray-900 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+                              : "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+                          }
+                        >
+                          {link.title}
+                        </a>
+                      </Link>
+                    )
+                  )}
                 </div>
               </div>
               <div className="hidden sm:ml-6 sm:flex sm:items-center">
@@ -91,45 +113,17 @@ export default function Navbar() {
                     leaveTo="transform opacity-0 scale-95"
                   >
                     <Menu.Items className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none">
-                      <Menu.Item>
-                        {({ active }) => (
-                          <a
-                            href="#"
-                            className={classNames(
-                              active ? "bg-gray-100" : "",
-                              "block px-4 py-2 text-sm text-gray-700"
+                      {MENU_ITEMS.filter((link) => link.type === "profile").map(
+                        (link, index) => (
+                          <Menu.Item key={index}>
+                            {({ active }) => (
+                              <ProfileMenuLink active={active} href={link.path}>
+                                {link.title}
+                              </ProfileMenuLink>
                             )}
-                          >
-                            Your Profile
-                          </a>
-                        )}
-                      </Menu.Item>
-                      <Menu.Item>
-                        {({ active }) => (
-                          <a
-                            href="#"
-                            className={classNames(
-                              active ? "bg-gray-100" : "",
-                              "block px-4 py-2 text-sm text-gray-700"
-                            )}
-                          >
-                            Settings
-                          </a>
-                        )}
-                      </Menu.Item>
-                      <Menu.Item>
-                        {({ active }) => (
-                          <a
-                            href="#"
-                            className={classNames(
-                              active ? "bg-gray-100" : "",
-                              "block px-4 py-2 text-sm text-gray-700"
-                            )}
-                          >
-                            Sign out
-                          </a>
-                        )}
-                      </Menu.Item>
+                          </Menu.Item>
+                        )
+                      )}
                     </Menu.Items>
                   </Transition>
                 </Menu>
@@ -151,34 +145,24 @@ export default function Navbar() {
           <Disclosure.Panel className="sm:hidden">
             <div className="pt-2 pb-3 space-y-1">
               {/* Current: "bg-indigo-50 border-indigo-500 text-indigo-700", Default: "border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700" */}
-              <Disclosure.Button
-                as="a"
-                href="#"
-                className="bg-indigo-50 border-indigo-500 text-indigo-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium"
-              >
-                Dashboard
-              </Disclosure.Button>
-              <Disclosure.Button
-                as="a"
-                href="#"
-                className="border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium"
-              >
-                Team
-              </Disclosure.Button>
-              <Disclosure.Button
-                as="a"
-                href="#"
-                className="border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium"
-              >
-                Projects
-              </Disclosure.Button>
-              <Disclosure.Button
-                as="a"
-                href="#"
-                className="border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium"
-              >
-                Calendar
-              </Disclosure.Button>
+              {MENU_ITEMS.filter((link) => link.type === "main").map(
+                (link, index) => (
+                  <Disclosure.Button
+                    as="a"
+                    key={index}
+                    className={
+                      router.pathname === link.path
+                        ? "bg-indigo-50 border-indigo-500 text-indigo-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium"
+                        : "border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium"
+                    }
+                    onClick={() => {
+                      router.push(`${link.path}`);
+                    }}
+                  >
+                    {link.title}
+                  </Disclosure.Button>
+                )
+              )}
             </div>
             <div className="pt-4 pb-3 border-t border-gray-200">
               <div className="flex items-center px-4">
@@ -199,27 +183,20 @@ export default function Navbar() {
                 </div>
               </div>
               <div className="mt-3 space-y-1">
-                <Disclosure.Button
-                  as="a"
-                  href="#"
-                  className="block px-4 py-2 text-base font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-100"
-                >
-                  Your Profile
-                </Disclosure.Button>
-                <Disclosure.Button
-                  as="a"
-                  href="#"
-                  className="block px-4 py-2 text-base font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-100"
-                >
-                  Settings
-                </Disclosure.Button>
-                <Disclosure.Button
-                  as="a"
-                  href="#"
-                  className="block px-4 py-2 text-base font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-100"
-                >
-                  Sign out
-                </Disclosure.Button>
+                {MENU_ITEMS.filter((link) => link.type === "profile").map(
+                  (link, index) => (
+                    <Disclosure.Button
+                      as="a"
+                      key={index}
+                      className="block px-4 py-2 text-base font-medium text-gray-500 hover:text-gray-800 hover:bg-gray-100"
+                      onClick={() => {
+                        router.push(`${link.path}`);
+                      }}
+                    >
+                      {link.title}
+                    </Disclosure.Button>
+                  )
+                )}
               </div>
             </div>
           </Disclosure.Panel>
