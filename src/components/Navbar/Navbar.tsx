@@ -1,53 +1,19 @@
 /* eslint-disable @next/next/no-img-element */
-/* This example requires Tailwind CSS v2.0+ */
+
 import { forwardRef, Fragment } from "react";
-import { Disclosure, Menu, Transition } from "@headlessui/react";
-import {
-  BellIcon,
-  LocationMarkerIcon,
-  MenuIcon,
-  XIcon,
-} from "@heroicons/react/outline";
+import { useRouter } from "next/router";
 import Link from "next/link";
-
-import { Router, useRouter } from "next/router";
-
-function classNames(...classes: string[]) {
-  return classes.filter(Boolean).join(" ");
-}
+import { Disclosure, Menu, Transition } from "@headlessui/react";
+import { MenuIcon, XIcon } from "@heroicons/react/outline";
 
 const MENU_ITEMS = [
   { title: "Home", path: "/", type: "main" },
   { title: "Features", path: "/features", type: "main" },
+  { title: "Sign In", path: "/signin", type: "profile" },
   { title: "Your Profile", path: "/profile", type: "profile" },
   { title: "Settings", path: "/profile", type: "profile" },
-  { title: "Sign out", path: "/profile", type: "profile" },
+  { title: "Sign Out", path: "/profile", type: "profile" },
 ];
-
-type Props = {
-  title: string;
-  path: string;
-  type: string;
-};
-
-const ProfileMenuLink = forwardRef((props: any, ref) => {
-  let { href, children, active, ...rest } = props;
-  return (
-    <Link href={href}>
-      <a
-        ref={ref}
-        {...rest}
-        className={classNames(
-          active ? "bg-gray-100" : "",
-          "block px-4 py-2 text-sm text-gray-700"
-        )}
-      >
-        {children}
-      </a>
-    </Link>
-  );
-});
-ProfileMenuLink.displayName = "ProfileMenuLink";
 
 export default function Navbar() {
   const router = useRouter();
@@ -205,3 +171,26 @@ export default function Navbar() {
     </Disclosure>
   );
 }
+
+function classNames(...classes: string[]) {
+  return classes.filter(Boolean).join(" ");
+}
+
+const ProfileMenuLink = forwardRef((props: any, ref) => {
+  let { href, children, active, ...rest } = props;
+  return (
+    <Link href={href}>
+      <a
+        ref={ref}
+        {...rest}
+        className={classNames(
+          active ? "bg-gray-100" : "",
+          "block px-4 py-2 text-sm text-gray-700"
+        )}
+      >
+        {children}
+      </a>
+    </Link>
+  );
+});
+ProfileMenuLink.displayName = "ProfileMenuLink";
