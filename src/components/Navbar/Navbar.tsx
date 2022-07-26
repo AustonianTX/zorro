@@ -1,22 +1,54 @@
 /* eslint-disable @next/next/no-img-element */
-
-import { forwardRef, Fragment } from "react";
+import { forwardRef, Fragment, useEffect, useState } from "react";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import { Disclosure, Menu, Transition } from "@headlessui/react";
 import { MenuIcon, XIcon } from "@heroicons/react/outline";
+import Image from "next/image";
+
+import { useUser } from "../../utils/useUser";
+
+import { supabase } from "../../utils/supabase-client";
 
 const MENU_ITEMS = [
   { title: "Home", path: "/", type: "main" },
   { title: "Features", path: "/features", type: "main" },
-  { title: "Sign In", path: "/signin", type: "profile" },
-  { title: "Your Profile", path: "/profile", type: "profile" },
-  { title: "Settings", path: "/profile", type: "profile" },
-  { title: "Sign Out", path: "/profile", type: "profile" },
+  { title: "Account", path: "/account", type: "profile" },
+  { title: "Sign Out", path: "/api/auth/logout", type: "profile" },
 ];
 
 export default function Navbar() {
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
+
   const router = useRouter();
+
+  const { user, userDetails } = useUser();
+
+  const profileAvatarUrl = userDetails?.avatarUrl;
+  useEffect(() => {
+    async function getImageUrl(profileAvatarUrl: string) {
+      try {
+        const { data, error } = await supabase.storage
+          .from("avatars")
+          .download(profileAvatarUrl);
+
+        if (error) {
+          throw error;
+        }
+
+        if (!data) {
+          throw new Error("No image object found.");
+        }
+
+        const url = URL.createObjectURL(data);
+        setAvatarUrl(url);
+      } catch (error: any) {
+        console.log("Error downloading image: ", error.message);
+      }
+    }
+
+    if (profileAvatarUrl) getImageUrl(profileAvatarUrl);
+  }, [profileAvatarUrl]);
 
   return (
     <Disclosure as="nav" className="bg-white shadow">
@@ -57,30 +89,45 @@ export default function Navbar() {
                 </div>
               </div>
               <div className="hidden sm:ml-6 sm:flex sm:items-center">
-                {/* Profile dropdown */}
-                <Menu as="div" className="ml-3 relative">
-                  <div>
-                    <Menu.Button className="bg-white rounded-full flex text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                      <span className="sr-only">Open user menu</span>
-                      <img
-                        className="h-8 w-8 rounded-full"
-                        src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
-                        alt=""
-                      />
-                    </Menu.Button>
-                  </div>
-                  <Transition
-                    as={Fragment}
-                    enter="transition ease-out duration-200"
-                    enterFrom="transform opacity-0 scale-95"
-                    enterTo="transform opacity-100 scale-100"
-                    leave="transition ease-in duration-75"
-                    leaveFrom="transform opacity-100 scale-100"
-                    leaveTo="transform opacity-0 scale-95"
-                  >
-                    <Menu.Items className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none">
-                      {MENU_ITEMS.filter((link) => link.type === "profile").map(
-                        (link, index) => (
+                {/* Desktop Profile dropdown */}
+                {!user && (
+                  <Link href={"/signin"} passHref>
+                    <a
+                      className={
+                        "border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+                      }
+                    >
+                      Sign In
+                    </a>
+                  </Link>
+                )}
+                {user && (
+                  <Menu as="div" className="ml-3 relative">
+                    <div>
+                      <Menu.Button className="bg-white rounded-full flex text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        <span className="sr-only">Open user menu</span>
+                        <Image
+                          className="h-8 w-8 rounded-full"
+                          src={avatarUrl ? avatarUrl : "/profile_image.jpg"}
+                          alt="avatar"
+                          height="32"
+                          width="32"
+                        />
+                      </Menu.Button>
+                    </div>
+                    <Transition
+                      as={Fragment}
+                      enter="transition ease-out duration-200"
+                      enterFrom="transform opacity-0 scale-95"
+                      enterTo="transform opacity-100 scale-100"
+                      leave="transition ease-in duration-75"
+                      leaveFrom="transform opacity-100 scale-100"
+                      leaveTo="transform opacity-0 scale-95"
+                    >
+                      <Menu.Items className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none">
+                        {MENU_ITEMS.filter(
+                          (link) => link.type === "profile"
+                        ).map((link, index) => (
                           <Menu.Item key={index}>
                             {({ active }) => (
                               <ProfileMenuLink active={active} href={link.path}>
@@ -88,11 +135,11 @@ export default function Navbar() {
                               </ProfileMenuLink>
                             )}
                           </Menu.Item>
-                        )
-                      )}
-                    </Menu.Items>
-                  </Transition>
-                </Menu>
+                        ))}
+                      </Menu.Items>
+                    </Transition>
+                  </Menu>
+                )}
               </div>
               <div className="-mr-2 flex items-center sm:hidden">
                 {/* Mobile menu button */}
@@ -133,18 +180,22 @@ export default function Navbar() {
             <div className="pt-4 pb-3 border-t border-gray-200">
               <div className="flex items-center px-4">
                 <div className="flex-shrink-0">
-                  <img
-                    className="h-10 w-10 rounded-full"
-                    src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
-                    alt=""
+                  <Image
+                    className="h-8 w-8 rounded-full"
+                    src={avatarUrl ? avatarUrl : "/profile_image.jpg"}
+                    alt="avatar"
+                    height="40"
+                    width="40"
                   />
                 </div>
                 <div className="ml-3">
                   <div className="text-base font-medium text-gray-800">
-                    Tom Cook
+                    {userDetails?.fullName
+                      ? userDetails?.fullName
+                      : "A Cool User"}
                   </div>
                   <div className="text-sm font-medium text-gray-500">
-                    tom@example.com
+                    {user?.email ? user?.email : "No email yet"}
                   </div>
                 </div>
               </div>

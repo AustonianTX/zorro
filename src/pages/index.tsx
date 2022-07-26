@@ -5,16 +5,6 @@ import Auth from "../components/Auth/Auth";
 import { supabase } from "../utils/supabase-client";
 
 const Home: NextPage = () => {
-  const [session, setSession] = useState<Session | null>(null);
-
-  useEffect(() => {
-    setSession(supabase.auth.session());
-
-    supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-    });
-  }, []);
-
   return (
     <div className="py-10">
       <header>
@@ -28,9 +18,7 @@ const Home: NextPage = () => {
         <div className="max-w-7xl mx-auto sm:px-6 lg:px-8">
           {/* Replace with your content */}
           <div className="px-4 py-8 sm:px-0">
-            <div className="border-4 border-dashed border-gray-200 rounded-lg h-96">
-              {!session ? <Auth /> : <h1>YOU SIGNED IN BRO</h1>}
-            </div>
+            <div className="border-4 border-dashed border-gray-200 rounded-lg h-96"></div>
           </div>
           {/* /End replace */}
         </div>

@@ -1,7 +1,6 @@
 /* eslint-disable @next/next/no-img-element */
 import { useState } from "react";
 import { supabase } from "../../utils/supabase-client";
-import { MailIcon } from "@heroicons/react/solid";
 
 const Auth = () => {
   const [loading, setLoading] = useState(false);

@@ -1,11 +1,11 @@
 /* eslint-disable @next/next/no-img-element */
 import React, { useState, useEffect } from "react";
-import { supabase } from "../utils/supabase-client";
+import { supabase } from "../../utils/supabase-client";
 
 interface AvatarProps {
   url: string | null;
   size: any;
-  onUpload: any;
+  onUpload?: any;
 }
 
 const Avatar = ({ url, size, onUpload }: AvatarProps) => {
@@ -24,6 +24,10 @@ const Avatar = ({ url, size, onUpload }: AvatarProps) => {
 
       if (error) {
         throw error;
+      }
+
+      if (!data) {
+        throw new Error("No image object found.");
       }
 
       const url = URL.createObjectURL(data);
